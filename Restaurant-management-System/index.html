@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Booking and Owner Dashboard</title>
+    <style>
+        /* Basic Styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px;
+            text-align: center;
+        }
+
+        h1 {
+            margin: 0;
+        }
+
+        .booking-form, .login-form, .dashboard {
+            width: 80%;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        input, button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #4CAF50;
+            color: white;
+        }
+
+        /* Hide elements initially */
+        .dashboard, .login-form {
+            display: none;
+        }
+
+        /* Fixed position for the owner login button (above navbar) */
+        .owner-header {
+            text-align: right;
+            position: fixed;
+            top: 10px;
+            right: 20px;
+            z-index: 100;
+            font-size: 14px;
+        }
+
+        .owner-header a {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            background-color: #4CAF50;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+
+        .owner-header a:hover {
+            background-color: #45a049;
+        }
+
+        .back-button {
+            background-color: #f44336;
+            color: white;
+            padding: 10px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .back-button:hover {
+            background-color: #e53935;
+        }
+
+        /* Back arrow for the owner dashboard */
+        .back-arrow {
+            cursor: pointer;
+            font-size: 20px;
+            color: #4CAF50;
+            background: none;
+            border: none;
+        }
+
+        /* Back arrow button above the form */
+        .back-to-home {
+            font-size: 20px;
+            cursor: pointer;
+            color: #4CAF50;
+            background: none;
+            border: none;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Swastik's Restaurant<br><h3>Welcome to My Restaurant Table Booking page</h3></h1>
+    
+</header>
+
+<!-- Owner Login clickable link at the top-right, aligned above navbar -->
+<div class="owner-header">
+    <a href="javascript:void(0);" id="ownerLoginBtn">Owner Login</a>
+</div>
+
+<!-- Customer Booking Form -->
+<div class="booking-form" id="bookingFormSection">
+    <h2>Book Your Table Here</h2>
+    <form id="bookingForm">
+        <label for="name">Full Name:</label>
+        <input type="text" id="name" name="name" required><br>
+
+        <label for="email">Email Address:</label>
+        <input type="email" id="email" name="email" required><br>
+
+        <label for="phone">Phone Number:</label>
+        <input type="tel" id="phone" name="phone" required><br>
+
+        <label for="date">Date:</label>
+        <input type="date" id="date" name="date" required><br>
+
+        <label for="time">Time:</label>
+        <input type="time" id="time" name="time" required><br>
+
+        <label for="guests">Number of Guests:</label>
+        <input type="number" id="guests" name="guests" min="1" required><br>
+
+        <button type="submit">Book Now</button>
+    </form>
+</div>
+
+<!-- Owner Login Section -->
+<div class="login-form" id="loginFormSection">
+    <button class="back-to-home" onclick="goBackHome()">← Back to Home</button>
+    <h2>Owner Login</h2>
+    <form id="loginForm">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required><br>
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required><br>
+
+        <button type="submit">Login</button>
+    </form>
+</div>
+
+<!-- Owner Dashboard -->
+<div class="dashboard" id="dashboardSection">
+    <button class="back-arrow" onclick="goBack()">← Back to Login</button>
+    <h2>Owner Dashboard</h2>
+    <button onclick="logout()">Logout</button>
+    <h3>Customer Bookings</h3>
+    <table id="bookingTable">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Guests</th>
+            </tr>
+        </thead>
+        <tbody id="bookingList"></tbody>
+    </table>
+</div>
+
+<script>
+    // Simulate login credentials
+    const adminUsername = "Swastik";
+    const adminPassword = "Swastik123";
+
+    // Hide booking form and show the login section when owner clicks "Owner Login"
+    document.getElementById('ownerLoginBtn').addEventListener('click', function() {
+        document.getElementById('loginFormSection').style.display = 'block';
+        document.getElementById('bookingFormSection').style.display = 'none';
+        document.getElementById('ownerLoginBtn').style.display = 'none';
+    });
+
+    // Handle booking form submission
+    document.getElementById('bookingForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        // Get form data
+        const bookingData = {
+            name: document.getElementById('name').value,
+            email: document.getElementById('email').value,
+            phone: document.getElementById('phone').value,
+            date: document.getElementById('date').value,
+            time: document.getElementById('time').value,
+            guests: document.getElementById('guests').value
+        };
+
+        // Store booking data in localStorage (Only store new data)
+        let bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+        bookings.push(bookingData); // Add new booking data
+        localStorage.setItem('bookings', JSON.stringify(bookings));
+
+        // Show thank you popup and reset the form
+        alert('Thank you for booking a table!');
+
+        // Reset the form
+        document.getElementById('bookingForm').reset();
+    });
+
+    // Handle owner login
+    document.getElementById('loginForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+
+        // Check if the login credentials match
+        if (username === adminUsername && password === adminPassword) {
+            // If login is successful, hide login form and show dashboard
+            document.getElementById('loginFormSection').style.display = 'none';
+            document.getElementById('dashboardSection').style.display = 'block';
+            loadBookingData();
+        } else {
+            alert('Invalid credentials!');
+        }
+    });
+
+    // Load customer booking data into the table
+    function loadBookingData() {
+        const bookings = JSON.parse(localStorage.getItem('bookings')) || [];
+        const bookingList = document.getElementById('bookingList');
+
+        // Clear the table before adding new data
+        bookingList.innerHTML = '';
+
+        // Populate the table with booking data
+        bookings.forEach(booking => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${booking.name}</td>
+                <td>${booking.email}</td>
+                <td>${booking.phone}</td>
+                <td>${booking.date}</td>
+                <td>${booking.time}</td>
+                <td>${booking.guests}</td>
+            `;
+            bookingList.appendChild(row);
+        });
+    }
+
+    // Handle logout
+    function logout() {
+        // Redirect to login section and hide dashboard
+        document.getElementById('dashboardSection').style.display = 'none';
+        document.getElementById('loginFormSection').style.display = 'block';
+        document.getElementById('ownerLoginBtn').style.display = 'block';
+    }
+
+    // Back button to home page
+    function goBackHome() {
+        window.location.href = "index.html"; // Replace with your home page URL
+    }
+
+    // Back button to owner login page
+    function goBack() {
+        document.getElementById('dashboardSection').style.display = 'none';
+        document.getElementById('loginFormSection').style.display = 'block';
+    }
+</script>
+
+</body>
+</html>
